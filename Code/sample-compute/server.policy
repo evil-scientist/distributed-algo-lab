@@ -1,0 +1,4 @@
+grant codeBase "file:~/Q2/DistributedAlgorithms/Lab/" {
+    permission java.security.AllPermission;
+};
+
