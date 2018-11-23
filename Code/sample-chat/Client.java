@@ -66,7 +66,7 @@ public class Client extends UnicastRemoteObject implements ChatInterface , Runna
         clientPassword = scanner.nextLine();
         System.out.println("\nConnecting To RMI Server...\n");
 
-        ChatInterface chatinterface = (ChatInterface)Naming.lookup("RMIServer");
+        ChatInterface chatinterface = (ChatInterface)Naming.lookup("//binaryboombox/~evilscientist/:1099");
         new Thread(new Client(chatinterface , clientName , clientPassword)).start();
     }
  
