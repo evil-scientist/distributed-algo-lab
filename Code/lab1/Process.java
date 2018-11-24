@@ -1,96 +1,130 @@
-package lab1;
+
+
 import java.rmi.*;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-
+import java.rmi.NotBoundException;
 import java.net.MalformedURLException;
+import java.rmi.server.UnicastRemoteObject;
 
-public class Process extends UnicastRemoteObject implements CommInterface , Runnable {
-    // RMI stuff
+
+public class Process extends UnicastRemoteObject implements RMI_Interface 
+{
 	private static final long serialVersionUID = 1L;
-    
-    // PROCESS VARIABLES
+	int sclk=0,ack_counter=0;
+	int proc_id,total_proc;
+	List<String> ackBuffer = new ArrayList<>();
+	List<String> messageBuffer = new ArrayList<>();
 	
-	// Process ID for each process
-    private int processID;
-    // Bool to check if ACK received from each process for message m
-    boolean ackReceived = false;
-    // Message Buffer- FIFO to store ordered list of received messages
-    private ArrayList<CommInterface> messageBuffer;
-    // Scalar clock maintained by each Process
-    private int sCLK = 0;
-    
-    // PROCESS METHODS
-    
-    // Update Scalar Clock by 1
-    private void clockTick() {
-    	sCLK = sCLK + 1;
-    }
-    
-    // Broadcast message with scalar clock sclk, process ID
-    public void broadcastMessage(String sCLK,String processID) throws RemoteException{
-    	clockTick();
-    	// This part broadcasts the message 
-    	// Call using RMI each process' receive method and update buffer
-    }
-    
-    // Receive message with scalar clock sclk, process ID
-    public void receive(int sclk, int procID ) {
-    // This is an RMI Method
-    
-    	// Store the message in buffer
-    	
-    	// Order the buffer	   
-    	orderBuffer();
-    }
-    
-    // Order received messages in messageBuffer array according to (sCLK,processID)
-    private void orderBuffer () {
-    	// ORDER BUFFER
-    	ArrayList<CommInterface> messageBuffer;
-    }
-    
-    //
-    public boolean checkMessageBuffer(CommInterface ci,String name, String pass) throws RemoteException {
-    	/*
-    	for( String message : this.messageBuffer(ci) ) {
-    	    
-    	}
-    	;
-    	return false;
-    */
-    }
-    
-    /*OLD STUFF
-    private CommInterface server;
-    private String ClientName;
-    */
-    
-    protected Process(CommInterface comminterface,String clientname,String password) throws RemoteException {
-        //this.server = comminterface;
-        //this.ClientName = clientname;
-    }
- 
-    public void run() {
-            System.out.println("Successfully Connected To RMI Server");
-            System.out.println("NOTE : Type LOGOUT to Exit From The Service");
-            System.out.println("Now You are Online To Chat\n");
-            String message;
-            
-            try {
-            	server.broadcastMessage(ClientName , message);
-            	}
-            catch(RemoteException e) {
-            	e.printStackTrace();
-            }  
-    }
-    
-    public static void main(String[] args) throws MalformedURLException,RemoteException,NotBoundException {
-    	System.out.println("\n Process [i] starting ~~\n");  
-        
-        CommInterface comminterface = (CommInterface)Naming.lookup("//binaryboombox/chat:1099");
-        //new Thread(new Process(comminterface , clientName , clientPassword)).start();
-    }
- 
+	// CONSTRUCTOR FOR SINGLE PROCESS
+	public Process(int procid,int totproc) throws RemoteException
+	{
+		this.proc_id=procid;
+		this.total_proc=totproc;
+	}
+
+	public void receive(String message)
+	{
+		/*
+		 * MESSAGE HAVE THE FOLLOWING FORMAT:
+		 * <type><sender process><timestamp>
+		 * ex: m15 [M from 1 at time 5]
+		 * ACK HAVE THE FOLLOWING FORMAT:
+		 * <type><message for which ack>
+		 * ex: a1 [ACK FOR m1]
+		 */
+			switch(message.charAt(0))
+			{
+				case 'm':  
+						System.out.println("Message received from Process "+message.charAt(1));	
+						
+						// GET CORRECT TIMESTAMP
+						sclk= Math.max(sclk+1,Integer.parseInt(message.substring(2)));
+						message = message.substring(0, 1)+Integer.toString(sclk); 
+	
+						// STORE IN MESSAGE BUFFER
+						messageBuffer.add(message); 
+						sort();
+	
+						// SEND ACK FOR RECEIVED MESSAGE
+						// INCREMENT TIMESTAMP
+						sclk += 1;
+						String ack = "a"+message.charAt(1); // Look into sending timestamp for ACK | really needed?
+						for(int i=1;i<=total_proc;i++)
+						{
+								broadcast(ack);
+						}
+						break;
+				case 'a':
+						System.out.println("Message received from Process "+message.charAt(1));	
+						char messageID = message.charAt(1); 
+						if(messageID == messageBuffer.get(0).charAt(1)) // CHECK IF ACK IS FOR HEAD OF MESSAGE BUFFER
+						{
+							ack_counter  += 1;
+							// CHECK IF ALL ACK RECEIVED FOR HEAD
+							if (ack_counter == total_proc) 
+							{
+								ack_counter = 0; // RESET COUNTER
+								deliver(); // METHOD TO CLEAR BOTH BUFFERS
+							}
+						}
+						else 
+						{
+							ackBuffer.add(message);
+						}
+						break;
+				default:
+						System.out.println("Message type unknown");
+						break;
+			}
+	}
+
+	public void sort() 
+	{
+		String[] buffer = new String[messageBuffer.size()];
+	    buffer = messageBuffer.toArray(buffer);
+		Arrays.sort(buffer, new Comparator<String>() 
+		{
+		    public int compare(String str1, String str2) 
+		    {
+		        String substr1 = str1.substring(2);
+		        String substr2 = str2.substring(2);
+		        return Integer.valueOf(substr1).compareTo(Integer.valueOf(substr2));
+		    }
+		});
+		
+		messageBuffer = Arrays.asList(buffer);
+	}
+	public void deliver() 
+	{
+		messageBuffer.remove(0); // DELETE MESSAGE AT HEAD (deliver)
+		for (int i = 0; i< ackBuffer.size(); i++) // ITERATE OVER ACK BUFFER TO INCREMENT COUNTER FOR NEW HEAD
+		{
+			if (messageBuffer.get(0).charAt(1) == ackBuffer.get(i).charAt(1)) 
+			{
+				ack_counter += 1;
+				ackBuffer.remove(i); // ALREADY COUNTED, hence removed
+			}
+		}
+	}
+	
+	public void broadcast(String message)
+	{
+		for(int i=1; i<=total_proc;i++)
+		{
+			try
+			{
+				Process p =(Process)java.rmi.Naming.lookup("rmi://localhost/process"+i);
+				p.receive(message);
+			}
+			catch (RemoteException | NotBoundException | MalformedURLException e)
+			{
+				continue;
+			}
+		}
+
+	}
+
 }
