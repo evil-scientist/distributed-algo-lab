@@ -1,13 +1,9 @@
 /**
- * Main Class that creates all processes that run on a (single) host
+ * Main Class that creates all processes that run on a (single) host.
+ * Used to create objects of Component class which are processes in system.
  */
 package chandyLamport;
-
-/**
- * @author evilscientist
- *
- */
-
+import java.rmi.*;
 public class Main {
 
 	/**
