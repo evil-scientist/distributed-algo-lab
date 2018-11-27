@@ -10,11 +10,11 @@ import java.net.MalformedURLException;
 import java.rmi.server.UnicastRemoteObject;
 
 
-public class Process extends UnicastRemoteObject implements RMI_Interface 
+public class Process extends UnicastRemoteObject implements RMI_Interface
 {
 	private static final long serialVersionUID = 1L;
 	int sclk=0,ack_counter=0;
-	int proc_id,total_proc;
+	public int proc_id,total_proc;
 	List<String> ackBuffer = new ArrayList<>();
 	List<String> messageBuffer = new ArrayList<>();
 	
@@ -51,29 +51,41 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 						// SEND ACK FOR RECEIVED MESSAGE
 						// INCREMENT TIMESTAMP
 						sclk += 1;
-						String ack = "a"+message.charAt(1); // Look into sending timestamp for ACK | really needed?
+						String ack = "a"+message.charAt(1)+Integer.toString(proc_id); // Look into sending timestamp for ACK | really needed?
 						for(int i=1;i<=total_proc;i++)
 						{
+							if(i==proc_id)
+							{
+								continue;
+							}
+							else
+							{
 								broadcast(ack);
+							}
 						}
 						break;
 				case 'a':
-						System.out.println("Message received from Process "+message.charAt(1));	
+						System.out.println("Acknowledgement received from Process "+message.charAt(2));	
 						char messageID = message.charAt(1); 
-						if(messageID == messageBuffer.get(0).charAt(1)) // CHECK IF ACK IS FOR HEAD OF MESSAGE BUFFER
+						try
 						{
-							ack_counter  += 1;
-							// CHECK IF ALL ACK RECEIVED FOR HEAD
-							if (ack_counter == total_proc) 
+							if(messageID == messageBuffer.get(0).charAt(1)) // CHECK IF ACK IS FOR HEAD OF MESSAGE BUFFER
 							{
-								ack_counter = 0; // RESET COUNTER
-								deliver(); // METHOD TO CLEAR BOTH BUFFERS
+								ack_counter  += 1;
+								// CHECK IF ALL ACK RECEIVED FOR HEAD
+								if (ack_counter == total_proc) 
+								{
+									ack_counter = 0; // RESET COUNTER
+									deliver(); // METHOD TO CLEAR BOTH BUFFERS
+								}
+							}
+							else 
+							{
+								ackBuffer.add(message);
 							}
 						}
-						else 
-						{
-							ackBuffer.add(message);
-						}
+						catch(IndexOutOfBoundsException e)
+						{}
 						break;
 				default:
 						System.out.println("Message type unknown");
@@ -116,8 +128,15 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 		{
 			try
 			{
-				Process p =(Process)java.rmi.Naming.lookup("rmi://localhost/process"+i);
-				p.receive(message);
+				if(i==proc_id)
+				{
+					continue;
+				}
+				else
+				{
+					RMI_Interface p =(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
+					p.receive(message);
+				}
 			}
 			catch (RemoteException | NotBoundException | MalformedURLException e)
 			{

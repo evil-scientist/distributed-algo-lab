@@ -20,25 +20,37 @@ public class Trial_1
 	static int numproc; //number of processes
 	static int proc_assign=0; //to check if program has been assigned a process
 	static int proc_id; //Process identifier
-	static Process proc;
-	static MessageInt stub;
-	static Registry reg;
+	public static Process proc;
+	//static Message stub;
+	public static Registry reg;
+	public Trial_1() {}
 
-	public static void main(String[] args) throws RemoteException, AlreadyBoundException
+	public static void main(String args[])
 	{
 		try
 		{
-			Registry r=LocateRegistry.createRegistry(1099);
-			reg.bind("Message",stub);
+			//Trial_1 obj = new Trial_1();
+			//MessageInt stub = (MessageInt) UnicastRemoteObject.exportObject(obj,1100);
+			reg = LocateRegistry.createRegistry(1099);
+			//stub =new Message();
+			//reg.bind("Message",(Registry)stub);
+			//reg=LocateRegistry.getRegistry("localhost",1099);
+			//System.out.println("Registry already running.");
 			System.out.println("Registry created");
 		}
-		catch(RemoteException | AlreadyBoundException ex)
+		catch(RemoteException ex)
 		{
-			Registry r=LocateRegistry.getRegistry(1099);
-			System.out.println("Registry already running.");
+			try
+			{
+				//reg = LocateRegistry.createRegistry(1099);
+				//System.out.println("Registry created");
+				reg=LocateRegistry.getRegistry("localhost",1099);
+				System.out.println("Registry already running.");
+			}
+			catch(RemoteException e) {}
 		}
+		
 		Scanner sc = new Scanner(System.in);
-		final Registry reg = r;
 
 		System.out.println("Enter the number of processes:");
 		numproc = sc.nextInt();
@@ -58,9 +70,13 @@ public class Trial_1
 			}
 			catch(RemoteException | NotBoundException e)
 			{
+				try
+				{
 				proc_assign=1;
 				proc = new Process(proc_id,numproc);
 				reg.bind(("Process:"+proc_id),(Registry)proc);
+				}
+				catch(RemoteException | AlreadyBoundException ex) {}
 			}
 		}
 

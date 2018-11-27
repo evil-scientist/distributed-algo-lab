@@ -8,10 +8,11 @@ import java.util.List;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 
 
-public class Process
+public class Process extends UnicastRemoteObject
 {
 	int sclk=0,ackinc=0,mesid;
 	Registry r;
@@ -20,9 +21,9 @@ public class Process
 	int temp[]={0,0};
 	public static Process p;
 	public static MessageInt m,m1,m2;
-	private final PriorityQueue <MessageInt> mesQ;
+	private PriorityQueue <MessageInt> mesQ;
 
-	public Process(int procid,int totproc)
+	public Process(int procid,int totproc) throws RemoteException
 	{
 		procid=procid;
 		totproc=totproc;

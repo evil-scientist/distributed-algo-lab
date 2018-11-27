@@ -11,6 +11,8 @@ public class Message extends UnicastRemoteObject implements MessageInt
 	int mes_id;
 	int orig_proc;
 
+	public Message() throws RemoteException {}
+
 	public Message(int orig_proc, char mestype, int mes_id, int timestamp) throws RemoteException
 	{
 		this.orig_proc=orig_proc;
