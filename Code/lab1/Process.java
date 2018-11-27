@@ -54,14 +54,7 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 						String ack = "a"+message.charAt(1)+Integer.toString(proc_id); // Look into sending timestamp for ACK | really needed?
 						for(int i=1;i<=total_proc;i++)
 						{
-							if(i==proc_id)
-							{
-								continue;
-							}
-							else
-							{
-								broadcast(ack);
-							}
+							broadcast(ack);
 						}
 						break;
 				case 'a':
@@ -129,7 +122,11 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 		{
 			try
 			{
-				
+				if(i==proc_id)
+				{
+					receive(message);
+					continue;
+				}
 				RMI_Interface p =(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
 				p.receive(message);
 				
