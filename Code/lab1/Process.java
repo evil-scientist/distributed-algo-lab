@@ -104,7 +104,7 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 	}
 	public void deliver() 
 	{
-		System.out.println("Message Delivered"+messageBuffer.get(charAt(1)));
+		System.out.println("Message "+messageBuffer.get(charAt(1))+"delivered");
 		messageBuffer.remove(0); // DELETE MESSAGE AT HEAD (deliver)
 		for (int i = 0; i< ackBuffer.size(); i++) // ITERATE OVER ACK BUFFER TO INCREMENT COUNTER FOR NEW HEAD
 		{
