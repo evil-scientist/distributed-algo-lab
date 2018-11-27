@@ -32,8 +32,8 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 		 * <type><sender process><timestamp>
 		 * ex: m15 [M from 1 at time 5]
 		 * ACK HAVE THE FOLLOWING FORMAT:
-		 * <type><message for which ack>
-		 * ex: a1 [ACK FOR m1]
+		 * <type><message for which ack><process_sending_ack>
+		 * ex: a12 [ACK FOR m1 from process 2]
 		 */
 			switch(message.charAt(0))
 			{
@@ -111,6 +111,7 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 	}
 	public void deliver() 
 	{
+		System.out.println("Message Delivered"+messageBuffer.get(charAt(1)));
 		messageBuffer.remove(0); // DELETE MESSAGE AT HEAD (deliver)
 		for (int i = 0; i< ackBuffer.size(); i++) // ITERATE OVER ACK BUFFER TO INCREMENT COUNTER FOR NEW HEAD
 		{
@@ -128,15 +129,10 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 		{
 			try
 			{
-				if(i==proc_id)
-				{
-					continue;
-				}
-				else
-				{
-					RMI_Interface p =(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
-					p.receive(message);
-				}
+				
+				RMI_Interface p =(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
+				p.receive(message);
+				
 			}
 			catch (RemoteException | NotBoundException | MalformedURLException e)
 			{

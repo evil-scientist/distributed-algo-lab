@@ -10,6 +10,7 @@ public class Main {
 
 	static int numproc; //number of processes
 	static int proc_id; //Process identifier
+	static int connected_processes=0;
 	
 	public static void main(String[] args)throws RemoteException, AlreadyBoundException
 	{
@@ -20,20 +21,31 @@ public class Main {
 		Component proc  = new Component(proc_id,numproc);  
 		try 
 		{
-		java.rmi.Naming.bind("rmi://localhost/process"+proc_id,proc);
+			java.rmi.Naming.bind("rmi://localhost/process"+proc_id,proc);
 		}
 		catch(MalformedURLException e)
 		{
 			System.out.println("Malformed URL");
 		}
-		System.out.println("Press \"ENTER\" to continue...");
-        try {
-        System.in.read();
-        } 
-        catch (IOException e) 
-        {
-        e.printStackTrace();
-        }
+
+		while(connected_processes!=numproc)
+		{
+			connected_processes=0;
+			for(int i=1;i<=numproc;i++)
+			{
+				try 
+				{
+					java.rmi.Naming.lookup("rmi://localhost/process"+i);
+					connected_processes+=1;
+				}
+				catch(NotBoundException |MalformedURLException e)
+				{}
+			}
+			System.out.println("Number of Processes yet to connect:"+(numproc-connected_processes));
+		}
+
+		System.out.println("All Processes have been connected");
+        
 		Thread t1 = new Thread(() ->{
 			for (int i =1; i<= 5; i++) 
 			{
