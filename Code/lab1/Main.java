@@ -59,7 +59,7 @@ public class Main
 		Thread t1 = new Thread(() ->{
         try
     		{
-			while(num_of_messages_sent != 3)
+			while(num_of_messages_sent != 2)
 			    {			
 			        procidS=Integer.toString(proc_id);
 			        clockS=Integer.toString(proc.sclk);

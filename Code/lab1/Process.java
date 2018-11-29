@@ -66,7 +66,7 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 							end = ackBuffer.size();
 							i++;
 						}
-						 System.out.println("DEBUG ackCounter = "+ack_counter);
+						 //System.out.println("DEBUG ackCounter = "+ack_counter);
 						// SEND ACK FOR RECEIVED MESSAGE
 						// INCREMENT TIMESTAMP
 						sclk += 1;
@@ -93,7 +93,7 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 							    i++;
 						    }
 		                }
-		                System.out.println("DEBUG ackCounter = "+ack_counter);
+		                //System.out.println("DEBUG ackCounter = "+ack_counter);
 		                if (ack_counter == total_proc)
 		                {
                             ack_counter = 0;
