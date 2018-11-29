@@ -3,7 +3,7 @@ import java.rmi.*;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.io.IOException;
-
+import java.util.Random;
 
 
 public class Main
@@ -13,6 +13,8 @@ public class Main
 	static int proc_id; //Process identifier
 	static int connected_processes=0;
 	static int temp;
+	static int rint;
+	static Random rand = new Random();
 
 	public static void main(String[] args) throws RemoteException, AlreadyBoundException
 	{
@@ -51,10 +53,16 @@ public class Main
 		System.out.println("All Processes have been connected");
 		Thread t1 = new Thread(() ->{
 			String message = 'm'+Integer.toString(proc_id)+Integer.toString(proc.sclk);	
-			if(proc_id==1)
+			try
 			{
-				proc.broadcast(message);
+				for(int i=0;i<5;i++)
+				{
+					rint = rand.nextInt(25)+1;
+					Thread.sleep(rint);
+					proc.broadcast(message);
+				}
 			}
+			catch(InterruptedException e){}
 		});
 		t1.start();
 	}
