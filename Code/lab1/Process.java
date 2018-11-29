@@ -13,7 +13,7 @@ import java.rmi.server.UnicastRemoteObject;
 public class Process extends UnicastRemoteObject implements RMI_Interface
 {
 	private static final long serialVersionUID = 1L;
-	int sclk=0,ack_counter=0;
+	int sclk=1,ack_counter=0;
 	public int proc_id,total_proc;
 	List<String> ackBuffer = new ArrayList<>();
 	List<String> messageBuffer = new ArrayList<>();
@@ -47,7 +47,7 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 						// STORE IN MESSAGE BUFFER
 						messageBuffer.add(message); 
 						sort();
-						
+
 						for (int i = 0; i< ackBuffer.size(); i++) // ITERATE OVER ACK BUFFER TO INCREMENT COUNTER FOR NEW HEAD
 						{
 							if (messageBuffer.get(0).charAt(1) == ackBuffer.get(i).charAt(1)) 
