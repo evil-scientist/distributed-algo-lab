@@ -35,28 +35,38 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 		 * <type><message for which ack><process_sending_ack>
 		 * ex: a12 [ACK FOR m1 from process 2]
 		 */
+		 int end=0;
+         int i  = 0 ;
+						
 			switch(message.charAt(0))
 			{
 				case 'm':  
+						//System.out.println("DEBUG: RECEIVED RAW"+message);
 						System.out.println("Message received from Process "+message.charAt(1));	
 						
 						// GET CORRECT TIMESTAMP
 						sclk= Math.max(sclk+1,Integer.parseInt(message.substring(2)));
-						message = message.substring(0, 1)+Integer.toString(sclk); 
+						//System.out.println("DEBUG:"+message.substring(2)+" "+sclk) ;
+						
+						message = message.substring(0, 2)+Integer.toString(sclk); 
 	
 						// STORE IN MESSAGE BUFFER
 						messageBuffer.add(message); 
 						sort();
-
-						for (int i = 0; i< ackBuffer.size(); i++) // ITERATE OVER ACK BUFFER TO INCREMENT COUNTER FOR NEW HEAD
+                        end=ackBuffer.size();
+                        while (i != end) // ITERATE OVER ACK BUFFER TO INCREMENT COUNTER FOR NEW HEAD
 						{
 							if (messageBuffer.get(0).charAt(1) == ackBuffer.get(i).charAt(1)) 
 							{
 								ack_counter += 1;
-								System.out.println("counter "+ack_counter);
+								//System.out.println("counter "+ack_counter);
 								ackBuffer.remove(i); // ALREADY COUNTED, hence removed
+								i--;
 							}
+							end = ackBuffer.size();
+							i++;
 						}
+						 System.out.println("DEBUG ackCounter = "+ack_counter);
 						// SEND ACK FOR RECEIVED MESSAGE
 						// INCREMENT TIMESTAMP
 						sclk += 1;
@@ -64,31 +74,31 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 						broadcast(ack);
 						break;
 				case 'a':
-						System.out.println("Acknowledgement received from Process "+message.charAt(2));	
+						System.out.println("Acknowledgement received from Process "+message.charAt(2) + " for message: m"+message.charAt(1));	
 						char messageID = message.charAt(1); 
-						try
-						{
-							if(messageID == messageBuffer.get(0).charAt(1)) // CHECK IF ACK IS FOR HEAD OF MESSAGE BUFFER
-							{
-								ack_counter  += 1;
-
-								System.out.println("counter "+ack_counter);
-								// CHECK IF ALL ACK RECEIVED FOR HEAD
-								if (ack_counter == total_proc) 
-								{
-									ack_counter = 0; // RESET COUNTER
-									deliver(); // METHOD TO CLEAR BOTH BUFFERS
-								}
-							}
-							else 
-							{
-								ackBuffer.add(message);
-							}
-						}
-						catch(IndexOutOfBoundsException e)
-						{
-							ackBuffer.add(message);
-						}
+						ackBuffer.add(message);	
+						if(!messageBuffer.isEmpty())
+                		{
+			                end=ackBuffer.size();
+                            while (i != end) // ITERATE OVER ACK BUFFER TO INCREMENT COUNTER FOR NEW HEAD
+						    {
+							    if (messageBuffer.get(0).charAt(1) == ackBuffer.get(i).charAt(1)) 
+							    {
+								    ack_counter += 1;
+								    //System.out.println("counter "+ack_counter);
+								    ackBuffer.remove(i); // ALREADY COUNTED, hence removed
+								    i--;
+							    }
+							    end = ackBuffer.size();
+							    i++;
+						    }
+		                }
+		                System.out.println("DEBUG ackCounter = "+ack_counter);
+		                if (ack_counter == total_proc)
+		                {
+                            ack_counter = 0;
+                            deliver();
+                        }
 						break;
 				default:
 						System.out.println("Message type unknown");
@@ -118,19 +128,9 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 	}
 	public void deliver() 
 	{
-		System.out.println("Message ("+messageBuffer.get(0)+") delivered");
+		System.out.println("Message m"+messageBuffer.get(0).charAt(1)+" delivered");
+		System.out.println("\n");
 		messageBuffer.remove(0); // DELETE MESSAGE AT HEAD (deliver)
-		if(!messageBuffer.isEmpty())
-		{
-			for (int i = 0; i< ackBuffer.size(); i++) // ITERATE OVER ACK BUFFER TO INCREMENT COUNTER FOR NEW HEAD
-			{
-				if (messageBuffer.get(0).charAt(1) == ackBuffer.get(i).charAt(1)) 
-				{
-					ack_counter += 1;
-					ackBuffer.remove(i); // ALREADY COUNTED, hence removed
-				}
-			}
-		}
 	}
 	
 	public void broadcast(String message)
@@ -157,3 +157,26 @@ public class Process extends UnicastRemoteObject implements RMI_Interface
 	}
 
 }
+
+/*
+
+
+
+
+if(messageID == messageBuffer.get(0).charAt(1)) // CHECK IF ACK IS FOR HEAD OF MESSAGE BUFFER
+							{
+								ack_counter  += 1;
+
+								//System.out.println("counter "+ack_counter);
+								// CHECK IF ALL ACK RECEIVED FOR HEAD
+								if (ack_counter == total_proc) 
+								{
+									ack_counter = 0; // RESET COUNTER
+									deliver(); // METHOD TO CLEAR BOTH BUFFERS
+								}
+							}
+							else 
+							{
+								ackBuffer.add(message);
+							}
+*/

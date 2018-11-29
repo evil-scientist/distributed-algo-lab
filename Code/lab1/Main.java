@@ -16,7 +16,7 @@ public class Main
 	static int rint;// to store randomly generated integers for making a thread sleep
 	static int checkmessageBuffer; // check if the message sent by the process is still in the buffer
 	static int num_of_messages_sent=0;
-	static String procid , clock;
+	static String procidS , clockS;
 	static Random rand = new Random();
 
 	public static void main(String[] args) throws RemoteException, AlreadyBoundException
@@ -54,37 +54,39 @@ public class Main
 		}
 
 		System.out.println("All Processes have been connected");
+		System.out.println("\n\n------------------------------------------------------------\n\n");
+		
 		Thread t1 = new Thread(() ->{
+        try
+    		{
+			while(num_of_messages_sent != 3)
+			    {			
+			        procidS=Integer.toString(proc_id);
+			        clockS=Integer.toString(proc.sclk);
+			        String message = 'm' + procidS;
+			        message=message.concat(clockS);
+			        //System.out.println("DEBUG: SENDING RAW "+message);
 
-			System.out.println("Clock: "+proc.sclk);
-			procid=Integer.toString(proc_id);
-			clock=Integer.toString(proc.sclk);
-			String message = 'm'+procid;
-			message=message.concat(clock);
-			try
-			{
-				checkmessageBuffer=0;
-				for(int i=0;i<proc.messageBuffer.size();i++)
-				{
-					if(Integer.valueOf(proc.messageBuffer.get(i).charAt(1))==proc_id)
-					{
-						checkmessageBuffer=1;
-					}
-				}
-				if(checkmessageBuffer==0)
-				{
-					rint = rand.nextInt(100)+1;
-					Thread.sleep(rint);
-					proc.broadcast(message);
-					num_of_messages_sent+=1;
-				}
-				if(num_of_messages_sent==3)
-				{
-					return;
-				}
-			}
+				    checkmessageBuffer=0;
+				    for(int i=0;i<proc.messageBuffer.size();i++)
+				    {
+					    if(Integer.valueOf(proc.messageBuffer.get(i).charAt(1))==proc_id)
+					    {
+						    checkmessageBuffer=1;
+					    }
+				    }
+				    if(checkmessageBuffer==0)
+				    {
+					    rint = rand.nextInt(3000)+1000;
+					    Thread.sleep(rint);
+					    proc.broadcast(message);
+					    num_of_messages_sent+=1;
+				    }
+			    }
+			 }
 			catch(InterruptedException e){}
 		});
 		t1.start();
+		//return;
 	}
 }
