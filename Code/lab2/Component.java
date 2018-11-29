@@ -19,21 +19,27 @@ public class Component extends UnicastRemoteObject implements RMI_Interface
 	 * 
 	 */
 	List<String> QBuffer = new ArrayList<>();// Array list for each channel to store the value of Channel c
-	List<String> myState = new ArrayList<>(); // Array list for each Process to store its state
-	private boolean recording_local_state = false; // Check if recording self state
+	List<String> myStateS = new ArrayList<>(); // Array list for each Process to store last sent
+	List<String> myStateR = new ArrayList<>(); // Array list for each Process to store last received
+	
+	public boolean recording_local_state = false; // Check if recording self state
 	char marker = '#'; // Send # as marker
-	String message; // Actual message sent over any channel
+	//String message; // Actual message sent over any channel
 	
 	public Component(int procID, int total_process) throws RemoteException
 	{
 		this.processID=procID;
 		this.total_proc=total_process;
 		QBuffer.add(0,"NA");
-		myState.add(0,"NA");
+		myStateS.add(0,"NA");
+		myStateR.add(0,"NA");
+		
 		for (int i=1; i<=total_process; i++)
 		{
-		    QBuffer.add(i,"");
-		    myState.add(i,"");
+		    QBuffer.add(i,"empty");
+		    myStateS.add(i,"empty");
+		    myStateR.add(i,"empty");
+		
 		}
 		
 	}
@@ -43,7 +49,13 @@ public class Component extends UnicastRemoteObject implements RMI_Interface
 	{
 		// DO SOMETHING TO RECORD LOCAL STATE
 		// Maybe save value of some variable into a different variable
-		System.out.println("Process " + processID + " recorded its local state: " + myState);
+		
+		// STATE OF PROCESS!
+		System.out.println("\n\nProcess " + processID + " recorded its local state!");
+		System.out.println("Last Sent: "+ myStateS);
+		System.out.println("Last Received: "+ myStateR);
+		System.out.println("\n\n");
+		
 		
 		recording_local_state = true;
 		
@@ -71,7 +83,7 @@ public class Component extends UnicastRemoteObject implements RMI_Interface
 		switch(message.charAt(0))
 		{
 			case '#':  
-					System.out.println("Marker received from Process "+ senderID +" along Channel: "+senderID);
+					System.out.println("Marker received from Process "+ senderID +" along Channel: "+senderID+"->"+processID);
 					// CHECK IF ALREADY RECORDED STATE
 					if(!recording_local_state) 
 					{
@@ -80,24 +92,25 @@ public class Component extends UnicastRemoteObject implements RMI_Interface
 					}
 					else 
 					{
-						 System.out.println("The state of Channel "+Integer.toString(senderID)+" is : "+QBuffer.get(senderID)); // Contents of Q(c) == channelState(c);
+		                // STATE OF CHANNEL!
+						 System.out.println("\n\nThe state of Channel : "+senderID+"->"+processID+" is : "+QBuffer.get(senderID)+"\n\n"); // Contents of Q(c) == channelState(c);
 					}
 					break;						
 			
 			case 'm':
-					System.out.println("Message: "+message+" received from Process "+ senderID +" along Channel: "+senderID);							
+					System.out.println("Message: "+message+" received from Process "+ senderID +" along Channel: "+senderID+"->"+processID);							
 					if(recording_local_state) 
 					{
 						// ADD MESSAGE TO QBUFFER (replace the string of messages 
 						// present at SenderID location in buffer to include latest message
 						String update = QBuffer.get(senderID);
 						update = update+","+message;
-						QBuffer.add(senderID,update);
+						QBuffer.set(senderID,update);
 					}
 					else {
 						// Replace message string at senderId location 
 						// in myState Buffer to reflect latest received message from Process [senderID]
-						myState.add(senderID,message); 
+						myStateR.set(senderID,message); 
 					}
 					break;
 			default:
@@ -107,13 +120,16 @@ public class Component extends UnicastRemoteObject implements RMI_Interface
 	}
 
 	// Method which sends a message/marker along a single channel
-	public void send(int receiverID, String message){
+	public void send(int receiverID, String sending_message){
 		// Send message to Process with processID = receiverID
 		try
 		{
+			System.out.println("Sending message: "+sending_message+" to Process "+ receiverID +" along Channel: "+processID+"->"+receiverID);				
 			RMI_Interface p =(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+receiverID);
-			myState.add(processID,message); // ADD LAST SENT MESSAGE TO OWN STATE
-			p.receive(processID,message);
+			
+			myStateS.set(receiverID,sending_message); // ADD LAST SENT MESSAGE TO OWN STATE
+			
+			p.receive(processID,sending_message);
 		}	
 		catch (RemoteException | NotBoundException | MalformedURLException e)
 		{	
