@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.net.MalformedURLException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.TimeUnit;
 
 public class Component extends UnicastRemoteObject implements RMI_Interface
 {
@@ -48,31 +49,36 @@ public class Component extends UnicastRemoteObject implements RMI_Interface
 	}
 
 	// Record Local State
-	public void record_local_state()
+	public void record_local_state () 
 	{
 		// DO SOMETHING TO RECORD LOCAL STATE
 		// Maybe save value of some variable into a different variable
 		
 		// STATE OF PROCESS!
-		System.out.println("\n\nProcess " + processID + " recorded its local state!");
+		System.out.println("\nPROCESS " + processID + " recorded its local state!");
 		System.out.println("Last Sent: "+ myStateS);
 		System.out.println("Last Received: "+ myStateR);
 		System.out.println("\n\n");
 		
 		
 		recording_local_state = true;
-		
-		for (int i =1; i <= total_proc; i ++) {
-			if (i == processID) {
-				continue;
-			}
-			send(i,"#"); // Send marker along every channel
-		}
-		/*
-		 *for (int i =0; i < total_proc; i ++) {
-		 *	// Create message Buffer Q(c) for each channel 
-		 *}
-		 */
+	
+		Thread marker = new Thread (() ->{
+		try
+		{
+		    for (int i =1; i <= total_proc; i ++) 
+		    {
+			    if (i == processID) 
+			    {
+				    continue;
+			    }
+			    Thread.sleep(500);
+			    send(i,"#"); // Send marker along every channel
+	        }  
+	    }
+	    catch(InterruptedException e){}
+	  });
+	  marker.start();
 	}
 	
 	public void receive(int senderID,String message){
@@ -86,17 +92,18 @@ public class Component extends UnicastRemoteObject implements RMI_Interface
 		switch(message.charAt(0))
 		{
 			case '#':  
-					System.out.println("Marker received from Process "+ senderID +" along Channel: "+senderID+"->"+processID);
+					System.out.println("##### Marker received from Process "+ senderID +" along Channel: "+senderID+"->"+processID+" ######");
 					// CHECK IF ALREADY RECORDED STATE
 					if(!recording_local_state) 
 					{
 						// Record state of channel ID as 0 (empty)
 						record_local_state();
+						System.out.println("\nCHANNEL : "+senderID+"->"+processID+" STATE : "+QBuffer.get(senderID)+"\n\n"); // Contents of Q(c) == channelState(c);
 					}
 					else 
 					{
 		                // STATE OF CHANNEL!
-						System.out.println("\n\nThe state of Channel : "+senderID+"->"+processID+" is : "+QBuffer.get(senderID)+"\n\n"); // Contents of Q(c) == channelState(c);
+						System.out.println("\nCHANNEL : "+senderID+"->"+processID+" STATE : "+QBuffer.get(senderID)+"\n\n"); // Contents of Q(c) == channelState(c);
 						channel_state.set(senderID,1);
 					}
 					break;						

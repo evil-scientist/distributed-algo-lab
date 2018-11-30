@@ -57,7 +57,7 @@ public class Main {
 		}
 
 		System.out.println("All Processes have been connected");
-		System.out.println("\n\n------------------------------------------------------------\n\n");
+		System.out.println("\n\n----------------------STARTING COMMUNICATION----------------------------------\n\n");
 		 
         Thread t1 = new Thread(() ->{
 		try
@@ -78,18 +78,9 @@ public class Main {
 				
 				    if(proc_id==1 && i == 2 && !proc.recording_local_state) // DECIDE WHO AND WHEN STARTS ALGO
 				    {
-					    System.out.println("I AM STARTING THE ALGORITHM");
+					    System.out.println("\nI AM STARTING THE ALGORITHM\n");
 					    proc.record_local_state();
 				    }
-				}
-			}
-			int mr=0;
-			while(mr != (num_messages*(numproc-1))){mr=proc.mes_rec;}
-			for(int j = 1; j<proc.channel_state.size();j++)
-			{
-				if(proc.channel_state.get(j)==0 && j!=proc_id)
-				{
-					System.out.println("\n\nThe state of Channel : "+j+"->"+proc_id+" is : "+proc.QBuffer.get(j)+"\n\n"); // Contents of Q(c) == channelState(c);
 				}
 			}
 		}
@@ -98,3 +89,15 @@ public class Main {
 		t1.start();
 	}
 }
+
+/*
+int mr=0;
+			while(mr != (num_messages*(numproc-1))){mr=proc.mes_rec;}
+			for(int j = 1; j<proc.channel_state.size();j++)
+			{
+				if(proc.channel_state.get(j)==0 && j!=proc_id)
+				{
+					System.out.println("\n\nThe state of Channel : "+j+"->"+proc_id+" is : "+proc.QBuffer.get(j)+"\n\n"); // Contents of Q(c) == channelState(c);
+				}
+			}
+*/
