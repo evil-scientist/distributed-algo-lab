@@ -22,6 +22,12 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 	
 	int father; // Father of this process
 	int potential_father; // Potential Father of this process 
+
+	public static int sent_capture=0; // number of capture messages sent out
+	public static int sent_ack=0; // number of acknowledgements sent out
+	public static int receive_capture=0; // number of capture messages received
+	public static int receive_ack=0; // number of acknowledgements received
+	public static int num_capture=0; // number of times a process has been captured
 	
 	public Ordinary(int procID, int total_proc) throws RemoteException
 	{
@@ -33,6 +39,12 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 		
 		this.father = 0; // No father at start, equivalent to Father = nil
 		this.potential_father = 0; // No Potential Father at start 
+
+		this.sent_capture=0; 
+		this.sent_ack=0;
+		this.receive_capture=0;
+		this.receive_ack=0;
+		this.num_capture=0;
 	}
 
 /*	Function to compare messages lexicographically
@@ -94,6 +106,7 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 		{
 			case -1:  // Message is smaller, IGNORE
 					System.out.println("Discarding received message: ["+ senderLevel +","+senderID+"], my owner has: ["+level+","+owner_ID+"]");
+					receive_capture+=1;
 					break;						
 			
 			case 1: // Message is larger, process is potential father 
@@ -105,6 +118,8 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 						owner_ID = father; // Will now store owner's ID	
 					}
 					send(father, senderLevel, senderID); // ACK or KILL to father	
+					receive_capture+=1;
+					sent_ack+=1;
 					break;
 			case 0: // Message from Previous Father, accepting kill
 					father = potential_father;
@@ -112,10 +127,25 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 					level = senderLevel; // Will now store owner's level
 					owner_ID = father; // Will now store owner's ID	
 					send(father,senderLevel, senderID); // ACK to new father	
+					sent_ack+=1;
+					receive_ack+=1;
+					num_capture+=1;
 					break;		
 			default:
 					System.out.println("How did this happen?");
 					break;
 		}			
+	}
+
+	public void printlog()
+	{
+		System.out.println("\n\n----------------------LOG----------------------------------\n\n");
+		System.out.println("PROCESS :"+processID);	
+		System.out.println("Maximum Level :"+level);
+		System.out.println("Number of times process has been captured :"+num_capture);
+		System.out.println("Number of capture messages sent :"+sent_capture);
+		System.out.println("Number of capture messages received :"+receive_capture);
+		System.out.println("Number of acknowledgements sent :"+sent_ack);
+		System.out.println("Number of acknowledgements received :"+receive_ack);	
 	}
 }

@@ -33,7 +33,7 @@ public class Server extends UnicastRemoteObject implements ChatInterface {
     public synchronized void sendMessageToClient(String message) throws RemoteException{}
 
     public static void main(String[] arg) throws RemoteException, MalformedURLException {
-        Naming.rebind("rmi://binaryboombox/chat:1099", new Server());
+        Naming.rebind("rmi://DESKTOP-4EB7EO6/chat:1099", new Server());
     }
  
 } 

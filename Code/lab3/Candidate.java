@@ -3,7 +3,7 @@
  * Describes the procedures for a single process Ordinary P
  * Used to create objects which are single process in system
  * This PROCESS does NOT want to be elected 
- */
+ **/
 import java.rmi.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +24,11 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 	boolean KILLED; // Used to show if killed or alive
 	boolean SEND_SEMAPHORE; // Used to halt send loop to wait for ACK
 
+	public static int sent_capture=0; // number of capture messages sent out
+	public static int sent_ack=0; // number of acknowledgements sent out
+	public static int receive_capture=0; // number of capture messages received
+	public static int receive_ack=0; // number of acknowledgements received
+	public static int num_capture=0; // number of times a process has been captured
 
 	public Candidate(int procID, int total_proc) throws RemoteException
 	{
@@ -43,6 +48,12 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 
 		this.KILLED = false; // Not dead
 		this.SEND_SEMAPHORE = false; // didnt receive ACK 
+
+		this.sent_capture=0; 
+		this.sent_ack=0;
+		this.receive_capture=0;
+		this.receive_ack=0;
+		this.num_capture=0;
 		
 	}
 
@@ -105,16 +116,22 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 
 		System.out.println("Received message: ["+ senderLevel +","+senderID+"]");		
 		int message_state = compareMessage(senderLevel, senderID);
+		System.out.println(message_state);
 		switch(message_state)
 		{
 			case -1:// Message is smaller, IGNORE
 					System.out.println("Discarding received message: ["+ senderLevel +","+senderID+"]");
+					receive_capture+=1;
 					break;									
 			case 1: // Message is larger, get killed 
 					KILLED = true;
 					send(senderID, senderLevel, senderID); // send ACK to the one that killed
+					num_capture+=1;
+					receive_capture+=1;
+					sent_ack+=1;
 					break;
 			case 0: // Receiving ACK for message sent
+					receive_ack+=1;
 					if (KILLED == false)
 					{
 						System.out.println("Captured another!");	
@@ -135,5 +152,16 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 					System.out.println("How did this happen?");
 					break;
 		}			
+	}
+	public void printlog()
+	{
+		System.out.println("\n\n----------------------LOG----------------------------------\n\n");
+		System.out.println("PROCESS :"+processID);
+		System.out.println("Maximum Level :"+level);
+		System.out.println("Number of times process has been captured :"+num_capture);
+		System.out.println("Number of capture messages sent :"+sent_capture);
+		System.out.println("Number of capture messages received :"+receive_capture);
+		System.out.println("Number of acknowledgements sent :"+sent_ack);
+		System.out.println("Number of acknowledgements received :"+receive_ack);	
 	}
 }

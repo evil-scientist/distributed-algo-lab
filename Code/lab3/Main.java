@@ -81,9 +81,14 @@ public class Main {
 			{
 				while(!cproc.untraversed.isEmpty())
 				{
+					if(cproc.KILLED==true)
+					{
+						break;
+					}
 					int link = cproc.untraversed.get(0);
 					cproc.SEND_SEMAPHORE = false;
 					cproc.send(link,cproc.level,cproc.processID);
+					cproc.sent_capture+=1;
 					try
 					{
 						do
@@ -98,7 +103,24 @@ public class Main {
 				if (!cproc.KILLED)
 				{
 					System.out.println("I have been ELECTED!");
-					return;
+		 			for(int i=1;i<=numproc;i++)
+		 			{
+		 				
+						if(i==proc_id)
+						{
+							cproc.printlog();		
+						}
+						else
+						{
+							try
+							{
+								RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
+								p.printlog();
+							}
+							catch(RemoteException |NotBoundException |MalformedURLException e)
+							{}
+						}
+		 			}
 				}
 			}
 		
