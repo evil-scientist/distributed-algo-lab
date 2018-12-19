@@ -3,7 +3,7 @@
  * Describes the procedures for a single process Ordinary P
  * Used to create objects which are single process in system
  * This PROCESS does NOT want to be elected 
- **/
+ */
 import java.rmi.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +24,12 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 	boolean KILLED; // Used to show if killed or alive
 	boolean SEND_SEMAPHORE; // Used to halt send loop to wait for ACK
 
-	public static int sent_capture=0; // number of capture messages sent out
-	public static int sent_ack=0; // number of acknowledgements sent out
-	public static int receive_capture=0; // number of capture messages received
-	public static int receive_ack=0; // number of acknowledgements received
-	public static int num_capture=0; // number of times a process has been captured
+	int sent_capture; // number of capture messages sent out
+	int sent_ack; // number of acknowledgements sent out
+	int receive_capture; // number of capture messages received
+	int receive_ack; // number of acknowledgements received
+	int num_capture; // number of times a process has been captured
+
 
 	public Candidate(int procID, int total_proc) throws RemoteException
 	{
@@ -116,7 +117,6 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 
 		System.out.println("Received message: ["+ senderLevel +","+senderID+"]");		
 		int message_state = compareMessage(senderLevel, senderID);
-		System.out.println(message_state);
 		switch(message_state)
 		{
 			case -1:// Message is smaller, IGNORE
@@ -136,7 +136,7 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 					{
 						System.out.println("Captured another!");	
 						level = level + 1;
-						for(int i=0; i<=untraversed.size(); i++)
+						for(int i=0; i<untraversed.size(); i++)
 						{
 							if(untraversed.get(i)==link) 
 							{
@@ -153,6 +153,7 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 					break;
 		}			
 	}
+
 	public void printlog()
 	{
 		System.out.println("\n\n----------------------LOG----------------------------------\n\n");
@@ -164,4 +165,5 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 		System.out.println("Number of acknowledgements sent :"+sent_ack);
 		System.out.println("Number of acknowledgements received :"+receive_ack);	
 	}
+	
 }
