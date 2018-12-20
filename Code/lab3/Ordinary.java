@@ -31,6 +31,7 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 	
 	public Ordinary(int procID, int total_proc) throws RemoteException
 	{
+		System.setProperty("java.rmi.server.hostname","169.254.168.236");
 		this.processID=procID;
 		this.total_process=total_proc;
 		

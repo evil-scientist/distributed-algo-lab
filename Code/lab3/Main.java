@@ -19,6 +19,7 @@ public class Main {
 	static Random rand = new Random();
 
 	static char type; // Candidate or Ordinary type of Process 
+
 	
 	public static void main(String[] args)throws RemoteException, AlreadyBoundException
 	{
@@ -29,6 +30,7 @@ public class Main {
 		type = args[2].charAt(0);
 		Ordinary oproc  = new Ordinary(proc_id,numproc); 
 		Candidate cproc  = new Candidate(proc_id,numproc);
+		System.setProperty("java.rmi.server.hostname","169.254.168.236");
 		if (type == 'O')
 		{ 
 			try 
@@ -83,23 +85,31 @@ public class Main {
 		System.out.println("\n\n----------------------STARTING ALGORITHM----------------------------------\n\n");
 		 
         Thread t1 = new Thread(() ->{
-		
+			try
+			{
+				Thread.sleep(5000);
+			}
+			catch(InterruptedException e){}
 			if (type == 'C')
 			{
-				if(proc_id==1)
+				/*if(proc_id==1)
 				{
 					try
 					{
 						Thread.sleep(3000);
 					}
 					catch(InterruptedException e){}
-				}
+				}*/
 				while(!cproc.untraversed.isEmpty())
 				{
 					int link = cproc.untraversed.get(0);
 					cproc.SEND_SEMAPHORE = false;
 					cproc.send(link,cproc.level,cproc.processID);
 					cproc.sent_capture+=1;
+					if(cproc.KILLED==true)
+					{
+						break;
+					}
 					try
 					{
 						do
