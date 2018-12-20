@@ -33,6 +33,8 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 
 	public Candidate(int procID, int total_proc) throws RemoteException
 	{
+
+		System.setProperty("java.rmi.server.hostname","169.254.168.236");
 		this.processID=procID;
 		this.total_process=total_proc;		
 		
@@ -104,9 +106,9 @@ public class Candidate extends UnicastRemoteObject implements RMI_Interface
 		{	
 			try
 			{				
-				RMI_Interface p =(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.231/process"+receiverID);			
+				RMI_Interface q =(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.231/process"+receiverID);			
 				// Maybe add delay?
-				p.receive(processID,senderLevel,senderID);
+				q.receive(processID,senderLevel,senderID);
 			}
 			catch (RemoteException | NotBoundException | MalformedURLException ex)
 			{
