@@ -8,7 +8,9 @@ import java.rmi.*;
 import java.io.IOException;
 import java.util.Random;
 
-public class Main {
+public class Main{
+
+	private static final long serialVersionUID = 1L;
 
 	static int numproc; //number of processes
 	static int proc_id; //Process identifier
@@ -33,7 +35,7 @@ public class Main {
 		{ 
 			try 
 			{
-				java.rmi.Naming.bind("rmi://localhost/process"+proc_id,oproc);
+				java.rmi.Naming.bind("rmi://169.254.168.236/process"+proc_id,oproc);  // 169.254.168.231
 			}
 			catch(MalformedURLException e)
 			{
@@ -44,9 +46,9 @@ public class Main {
 		{ 
 			try 
 			{
-				java.rmi.Naming.bind("rmi://localhost/process"+proc_id,cproc);
+				java.rmi.Naming.bind("rmi://169.254.168.236/process"+proc_id,cproc);
 			}
-			catch(MalformedURLException e)
+			catch(MalformedURLException ex)
 			{
 				System.out.println("Malformed URL");
 			}	
@@ -59,11 +61,18 @@ public class Main {
 			{
 				try 
 				{
-					RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
+					RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.236/process"+i);
 					connected_processes+=1;
 				}
 				catch(NotBoundException |MalformedURLException e)
-				{}
+				{
+					try
+					{
+						RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.231/process"+i);
+						connected_processes+=1;
+					}
+					catch(NotBoundException |MalformedURLException ex) {}
+				}
 			}
 			if(temp!=(numproc-connected_processes))
 			{
@@ -79,19 +88,20 @@ public class Main {
 		
 			if (type == 'C')
 			{
-				if(proc_id==1)
+				/*if(proc_id==3)
 				{
 					try
 					{
 						Thread.sleep(3000);
 					}
 					catch(InterruptedException e){}
-				}
+				}*/
 				while(!cproc.untraversed.isEmpty())
 				{
 					int link = cproc.untraversed.get(0);
 					cproc.SEND_SEMAPHORE = false;
 					cproc.send(link,cproc.level,cproc.processID);
+					cproc.sent_capture+=1;
 					try
 					{
 						do
@@ -117,11 +127,18 @@ public class Main {
 						{
 							try
 							{
-								RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
+								RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.236/process"+i);
 								p.printlog();
 							}
 							catch(RemoteException |NotBoundException |MalformedURLException e)
-							{}
+							{
+								try
+								{
+									RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.231/process"+i);
+									p.printlog();
+								}
+								catch(RemoteException |NotBoundException |MalformedURLException ex) {}
+							}
 						}
 		 			}
 				}
