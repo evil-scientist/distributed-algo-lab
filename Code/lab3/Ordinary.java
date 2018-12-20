@@ -23,11 +23,11 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 	int father; // Father of this process
 	int potential_father; // Potential Father of this process 
 
-	public static int sent_capture=0; // number of capture messages sent out
-	public static int sent_ack=0; // number of acknowledgements sent out
-	public static int receive_capture=0; // number of capture messages received
-	public static int receive_ack=0; // number of acknowledgements received
-	public static int num_capture=0; // number of times a process has been captured
+	int sent_capture; // number of capture messages sent out
+	int sent_ack; // number of acknowledgements sent out
+	int receive_capture; // number of capture messages received
+	int receive_ack; // number of acknowledgements received
+	int num_capture; // number of times a process has been captured
 	
 	public Ordinary(int procID, int total_proc) throws RemoteException
 	{
@@ -121,12 +121,14 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 					break;						
 			
 			case 1: // Message is larger, process is potential father 
-					potential_father = senderID;						
+					potential_father = senderID;
+					level = senderLevel; // Will now store owner's level
+					owner_ID = potential_father; // Will now store owner's ID							
 					if(father == 0) // No owner  
 					{
 						father = potential_father;
-						level = senderLevel; // Will now store owner's level
-						owner_ID = father; // Will now store owner's ID	
+						//level = senderLevel; // Will now store owner's level
+						//owner_ID = father; // Will now store owner's ID	
 					}
 					send(father, senderLevel, senderID); // ACK or KILL to father	
 					receive_capture+=1;

@@ -96,23 +96,16 @@ public class Main{
 			{}
 			if (type == 'C')
 			{
-<<<<<<< HEAD
 				/*if(proc_id==3)
-=======
-				while(!cproc.untraversed.isEmpty())
->>>>>>> parent of fe49b0d... Added log
 				{
-					if(cproc.KILLED==true)
+					try
 					{
-						break;
+						Thread.sleep(3000);
 					}
-<<<<<<< HEAD
 					catch(InterruptedException e){}
 				}*/
 				while(!cproc.untraversed.isEmpty())
 				{
-=======
->>>>>>> parent of fe49b0d... Added log
 					int link = cproc.untraversed.get(0);
 					cproc.SEND_SEMAPHORE = false;
 					cproc.send(link,cproc.level,cproc.processID);
@@ -131,7 +124,7 @@ public class Main{
 				if (!cproc.KILLED)
 				{
 					System.out.println("I have been ELECTED!");
-		 			for(int i=1;i<=numproc;i++)
+					for(int i=1;i<=numproc;i++)
 		 			{
 		 				
 						if(i==proc_id)
