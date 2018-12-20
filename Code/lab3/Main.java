@@ -7,10 +7,8 @@ import java.net.MalformedURLException;
 import java.rmi.*;
 import java.io.IOException;
 import java.util.Random;
-import java.util.Properties;
-public class Main{
 
-	private static final long serialVersionUID = 1L;
+public class Main {
 
 	static int numproc; //number of processes
 	static int proc_id; //Process identifier
@@ -31,14 +29,11 @@ public class Main{
 		type = args[2].charAt(0);
 		Ordinary oproc  = new Ordinary(proc_id,numproc); 
 		Candidate cproc  = new Candidate(proc_id,numproc);
-
-		System.setProperty("java.rmi.server.hostname","169.254.168.236");
-
 		if (type == 'O')
 		{ 
 			try 
 			{
-				java.rmi.Naming.bind("rmi://169.254.168.236/process"+proc_id,oproc);  // 169.254.168.231
+				java.rmi.Naming.bind("rmi://localhost/process"+proc_id,oproc);
 			}
 			catch(MalformedURLException e)
 			{
@@ -49,9 +44,9 @@ public class Main{
 		{ 
 			try 
 			{
-				java.rmi.Naming.bind("rmi://169.254.168.236/process"+proc_id,cproc);
+				java.rmi.Naming.bind("rmi://localhost/process"+proc_id,cproc);
 			}
-			catch(MalformedURLException ex)
+			catch(MalformedURLException e)
 			{
 				System.out.println("Malformed URL");
 			}	
@@ -64,18 +59,11 @@ public class Main{
 			{
 				try 
 				{
-					RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.236/process"+i);
+					RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
 					connected_processes+=1;
 				}
 				catch(NotBoundException |MalformedURLException e)
-				{
-					try
-					{
-						RMI_Interface q=(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.231/process"+i);
-						connected_processes+=1;
-					}
-					catch(NotBoundException |MalformedURLException ex) {}
-				}
+				{}
 			}
 			if(temp!=(numproc-connected_processes))
 			{
@@ -88,28 +76,22 @@ public class Main{
 		System.out.println("\n\n----------------------STARTING ALGORITHM----------------------------------\n\n");
 		 
         Thread t1 = new Thread(() ->{
-			try
-			{
-				Thread.sleep(5000);
-			}
-			catch(InterruptedException e)
-			{}
+		
 			if (type == 'C')
 			{
-				/*if(proc_id==3)
+				if(proc_id==1)
 				{
 					try
 					{
 						Thread.sleep(3000);
 					}
 					catch(InterruptedException e){}
-				}*/
+				}
 				while(!cproc.untraversed.isEmpty())
 				{
 					int link = cproc.untraversed.get(0);
 					cproc.SEND_SEMAPHORE = false;
 					cproc.send(link,cproc.level,cproc.processID);
-					cproc.sent_capture+=1;
 					try
 					{
 						do
@@ -135,18 +117,11 @@ public class Main{
 						{
 							try
 							{
-								RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.236/process"+i);
+								RMI_Interface p=(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+i);
 								p.printlog();
 							}
 							catch(RemoteException |NotBoundException |MalformedURLException e)
-							{
-								try
-								{
-									RMI_Interface q=(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.231/process"+i);
-									q.printlog();
-								}
-								catch(RemoteException |NotBoundException |MalformedURLException ex) {}
-							}
+							{}
 						}
 		 			}
 				}
@@ -156,5 +131,3 @@ public class Main{
 		t1.start();
 	}
 }
-
-//java -Djava.security.policy=my.policy Main 4 3 C

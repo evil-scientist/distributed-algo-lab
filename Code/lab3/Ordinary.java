@@ -31,8 +31,6 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 	
 	public Ordinary(int procID, int total_proc) throws RemoteException
 	{
-
-		System.setProperty("java.rmi.server.hostname","169.254.168.236");	
 		this.processID=procID;
 		this.total_process=total_proc;
 		
@@ -83,25 +81,16 @@ public class Ordinary extends UnicastRemoteObject implements RMI_Interface
 	public void send(int receiverID, int senderLevel, int senderID)
 	{
 		// Send message to Process with processID = receiverID (link number is same as Process ID of receiver)
-		System.out.println("Sending message:"+" ["+senderLevel+","+senderID+"] "+"to Process "+ receiverID);
 		try
-		{				
-			RMI_Interface p =(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.236/process"+receiverID);			
+		{
+			System.out.println("Sending message:"+" ["+senderLevel+","+senderID+"] "+"to Process "+ receiverID);				
+			RMI_Interface p =(RMI_Interface)java.rmi.Naming.lookup("rmi://localhost/process"+receiverID);			
 			// Maybe add delay?
 			p.receive(processID,senderLevel,senderID);
 		}	
 		catch (RemoteException | NotBoundException | MalformedURLException e)
 		{	
-			try
-			{				
-				RMI_Interface q =(RMI_Interface)java.rmi.Naming.lookup("rmi://169.254.168.231/process"+receiverID);			
-				// Maybe add delay?
-				q.receive(processID,senderLevel,senderID);
-			}
-			catch (RemoteException | NotBoundException | MalformedURLException ex)
-			{
-				System.out.println("Error in sending");
-			}
+			System.out.println("Error in sending");
 		}
 	}
 	public void receive(int link, int senderLevel, int senderID)
